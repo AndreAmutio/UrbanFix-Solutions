@@ -1,8 +1,48 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+import Landing from "./pages/landing/Landing";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import ClienteDashboard from "./pages/cliente/ClienteDashboard";
+import TecnicoDashboard from "./pages/tecnico/TecnicoDashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+
 function App() {
   return (
-    <main className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
-      <h1 className="text-4xl font-bold">UrbanFix Frontend</h1>
-    </main>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Landing/>}/>
+        <Route path="/login" element={<Login/>}/>
+        <Route path="/register" element={<Register/>}/>
+        <Route
+  path="/cliente"
+  element={
+    <ProtectedRoute role="CLIENTE">
+      <ClienteDashboard />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/tecnico"
+  element={
+    <ProtectedRoute role="TECNICO">
+      <TecnicoDashboard />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/admin"
+  element={
+    <ProtectedRoute role="ADMIN">
+      <AdminDashboard />
+    </ProtectedRoute>
+  }
+/>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
