@@ -1,14 +1,18 @@
-require('dotenv').config();
+import express from 'express';
+import cors from 'cors';
 
-const express = require('express');
-const cors = require('cors');
+import { corsConfig } from './config/cors.js';
+import { env } from './config/env.js';
+import { errorHandler } from './middleware/error.middleware.js';
+import { setupSwagger } from './config/swagger.js';
+import routes from './routes/index.js';
 
 const app = express();
 
-app.use(cors());
+app.use(cors(corsConfig));
 app.use(express.json());
 
-const PORT = process.env.PORT || 3001;
+setupSwagger(app);
 
 app.get('/health', (req, res) => {
   res.json({
@@ -17,6 +21,10 @@ app.get('/health', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor ejecutándose en el puerto ${PORT}`);
+app.use('/api', routes);
+
+app.use(errorHandler);
+
+app.listen(env.port, () => {
+  console.log(`Servidor ejecutándose en el puerto ${env.port}`);
 });
