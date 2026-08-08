@@ -1,14 +1,18 @@
 import { Router } from 'express';
-import * as controller from '../controllers/service-request.controller.js';
+import * as controller from '../controllers/serviceRequest.controller.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { authorize } from '../middleware/role.middleware.js';
 import { validate } from '../middleware/validation.middleware.js';
+import { upload } from '../middleware/upload.middleware.js';
 import {
   createServiceRequestValidator,
   serviceRequestParamValidator,
+  updateStatusValidator,
 } from '../validators/service-request.validator.js';
 
 const router = Router();
+
+// ============ CLIENTE ============
 
 /**
  * @openapi
@@ -24,7 +28,7 @@ const router = Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required: [title, description, category, address]
+ *             required: [title, description, category, scheduledDate]
  *             properties:
  *               title:
  *                 type: string
@@ -34,10 +38,15 @@ const router = Router();
  *                 example: Hay una fuga en la cocina
  *               category:
  *                 type: string
- *                 example: Plomería
+ *                 enum: [ELECTRICIDAD, PLOMERIA, INFORMATICA, GASISTAS]
+ *                 example: PLOMERIA
  *               address:
  *                 type: string
  *                 example: Av. Corrientes 1234, CABA
+ *               scheduledDate:
+ *                 type: string
+ *                 format: date-time
+ *                 example: 2026-08-10T15:00:00.000Z
  *     responses:
  *       201:
  *         description: Solicitud creada
@@ -53,7 +62,7 @@ router.post(
   authenticate,
   authorize('CLIENTE'),
   validate(createServiceRequestValidator),
-  controller.create,
+  controller.createServiceRequest,
 );
 
 /**
@@ -72,7 +81,14 @@ router.post(
  *       403:
  *         description: No tenés permiso (solo CLIENTE)
  */
-router.get('/mias', authenticate, authorize('CLIENTE'), controller.getMyRequests);
+router.get(
+  '/mias',
+  authenticate,
+  authorize('CLIENTE'),
+  controller.getClientRequests,
+);
+
+// ============ TÉCNICO ============
 
 /**
  * @openapi
@@ -82,6 +98,13 @@ router.get('/mias', authenticate, authorize('CLIENTE'), controller.getMyRequests
  *     summary: Obtener solicitudes disponibles para aceptar
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *           enum: [ELECTRICIDAD, PLOMERIA, INFORMATICA, GASISTAS]
+ *         description: Filtrar por categoría
  *     responses:
  *       200:
  *         description: Lista de solicitudes pendientes sin técnico asignado
@@ -90,52 +113,12 @@ router.get('/mias', authenticate, authorize('CLIENTE'), controller.getMyRequests
  *       403:
  *         description: No tenés permiso (solo TECNICO)
  */
-router.get('/disponibles', authenticate, authorize('TECNICO'), controller.getAvailable);
-
-/**
- * @openapi
- * /api/solicitudes/mis-trabajos:
- *   get:
- *     tags: [Solicitudes]
- *     summary: Obtener trabajos asignados al técnico autenticado
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Lista de solicitudes asignadas al técnico
- *       401:
- *         description: Token no proporcionado o inválido
- *       403:
- *         description: No tenés permiso (solo TECNICO)
- */
-router.get('/mis-trabajos', authenticate, authorize('TECNICO'), controller.getMyJobs);
-
-/**
- * @openapi
- * /api/solicitudes/{id}:
- *   get:
- *     tags: [Solicitudes]
- *     summary: Obtener solicitud por ID
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID de la solicitud
- *     responses:
- *       200:
- *         description: Solicitud encontrada
- *       400:
- *         description: ID inválido
- *       401:
- *         description: Token no proporcionado o inválido
- *       404:
- *         description: Solicitud no encontrada
- */
-router.get('/:id', authenticate, validate(serviceRequestParamValidator), controller.getById);
+router.get(
+  '/disponibles',
+  authenticate,
+  authorize('TECNICO'),
+  controller.getAvailableRequests,
+);
 
 /**
  * @openapi
@@ -169,15 +152,40 @@ router.patch(
   authenticate,
   authorize('TECNICO'),
   validate(serviceRequestParamValidator),
-  controller.accept,
+  controller.acceptRequest,
 );
 
 /**
  * @openapi
- * /api/solicitudes/{id}/rechazar:
- *   patch:
+ * /api/solicitudes/mis-trabajos:
+ *   get:
  *     tags: [Solicitudes]
- *     summary: Rechazar una solicitud asignada
+ *     summary: Obtener trabajos asignados al técnico autenticado
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de solicitudes asignadas al técnico
+ *       401:
+ *         description: Token no proporcionado o inválido
+ *       403:
+ *         description: No tenés permiso (solo TECNICO)
+ */
+router.get(
+  '/mis-trabajos',
+  authenticate,
+  authorize('TECNICO'),
+  controller.getTechnicianJobs,
+);
+
+// ============ TODOS (CLIENTE, TÉCNICO, ADMIN) ============
+
+/**
+ * @openapi
+ * /api/solicitudes/{id}:
+ *   get:
+ *     tags: [Solicitudes]
+ *     summary: Obtener solicitud por ID
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -189,20 +197,181 @@ router.patch(
  *         description: ID de la solicitud
  *     responses:
  *       200:
- *         description: Solicitud rechazada
+ *         description: Solicitud encontrada
+ *       400:
+ *         description: ID inválido
+ *       401:
+ *         description: Token no proporcionado o inválido
+ *       404:
+ *         description: Solicitud no encontrada
+ */
+router.get(
+  '/:id',
+  authenticate,
+  validate(serviceRequestParamValidator),
+  controller.getRequestById,
+);
+
+// ============ IMAGEN (CLOUDINARY) ============
+
+/**
+ * @openapi
+ * /api/solicitudes/{id}/imagen:
+ *   post:
+ *     tags: [Solicitudes]
+ *     summary: Subir imagen a una solicitud
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la solicitud
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Imagen subida correctamente
+ *       400:
+ *         description: No se subió ninguna imagen
+ *       401:
+ *         description: Token no proporcionado o inválido
+ *       404:
+ *         description: Solicitud no encontrada
+ */
+router.post(
+  '/:id/imagen',
+  authenticate,
+  validate(serviceRequestParamValidator),
+  upload.single('image'),
+  controller.updateRequestImage,
+);
+
+/**
+ * @openapi
+ * /api/solicitudes/{id}/imagen:
+ *   delete:
+ *     tags: [Solicitudes]
+ *     summary: Eliminar imagen de una solicitud
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la solicitud
+ *     responses:
+ *       200:
+ *         description: Imagen eliminada correctamente
+ *       401:
+ *         description: Token no proporcionado o inválido
+ *       404:
+ *         description: Solicitud no encontrada
+ */
+router.delete(
+  '/:id/imagen',
+  authenticate,
+  validate(serviceRequestParamValidator),
+  controller.removeRequestImage,
+);
+
+// ============ ADMIN ============
+
+/**
+ * @openapi
+ * /api/admin/solicitudes:
+ *   get:
+ *     tags: [Admin]
+ *     summary: Listar todas las solicitudes (con filtro opcional)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [PENDIENTE, ACEPTADA, EN_PROGRESO, COMPLETADA, RECHAZADA, CANCELADA]
+ *         description: Filtrar por estado
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *           enum: [ELECTRICIDAD, PLOMERIA, INFORMATICA, GASISTAS]
+ *         description: Filtrar por categoría
+ *     responses:
+ *       200:
+ *         description: Lista de solicitudes
+ *       400:
+ *         description: Status o categoría inválido
  *       401:
  *         description: Token no proporcionado o inválido
  *       403:
- *         description: No tenés permiso o no pertenece al técnico
+ *         description: No tenés permiso (solo ADMIN)
+ */
+router.get(
+  '/admin/solicitudes',
+  authenticate,
+  authorize('ADMIN'),
+  controller.getAllRequests,
+);
+
+/**
+ * @openapi
+ * /api/admin/solicitudes/{id}/estado:
+ *   patch:
+ *     tags: [Admin]
+ *     summary: Cambiar estado de una solicitud
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la solicitud
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [status]
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [PENDIENTE, ACEPTADA, EN_PROGRESO, COMPLETADA, RECHAZADA, CANCELADA]
+ *                 example: COMPLETADA
+ *     responses:
+ *       200:
+ *         description: Estado actualizado
+ *       400:
+ *         description: Error de validación o status inválido
+ *       401:
+ *         description: Token no proporcionado o inválido
+ *       403:
+ *         description: No tenés permiso (solo ADMIN)
  *       404:
  *         description: Solicitud no encontrada
  */
 router.patch(
-  '/:id/rechazar',
+  '/admin/solicitudes/:id/estado',
   authenticate,
-  authorize('TECNICO'),
-  validate(serviceRequestParamValidator),
-  controller.reject,
+  authorize('ADMIN'),
+  validate(updateStatusValidator),
+  controller.updateRequestStatus,
 );
 
 export default router;

@@ -14,4 +14,10 @@ export const updateProfileValidator = [
     .isString()
     .withMessage('El teléfono debe ser un texto')
     .trim(),
+
+  body('address')
+    .optional()
+    .isString()
+    .withMessage('La dirección debe ser un texto')
+    .trim(),
 ];

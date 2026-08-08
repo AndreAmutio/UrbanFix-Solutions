@@ -10,7 +10,6 @@ const router = Router();
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/solicitudes', serviceRequestRoutes);
-router.use('/admin', adminRoutes);
 router.use('/stats', statsRoutes);
 
 export default router;

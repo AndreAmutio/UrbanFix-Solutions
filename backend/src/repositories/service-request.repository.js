@@ -17,7 +17,7 @@ export const findById = (id) => {
           phone: true,
           email: true,
           address: true,
-        }
+        },
       },
       tecnico: {
         select: {
@@ -25,16 +25,16 @@ export const findById = (id) => {
           name: true,
           phone: true,
           email: true,
-        }
-      }
-    }
+        },
+      },
+    },
   });
 };
 
 export const update = (id, data) => {
   return prisma.serviceRequest.update({
     where: { id },
-    data
+    data,
   });
 };
 
@@ -50,10 +50,10 @@ export const findByClient = (clienteId) => {
           name: true,
           phone: true,
           imageUrl: true,
-        }
-      }
+        },
+      },
     },
-    orderBy: { createdAt: 'desc' }
+    orderBy: { createdAt: 'desc' },
   });
 };
 
@@ -69,21 +69,28 @@ export const findByTechnician = (tecnicoId) => {
           name: true,
           phone: true,
           address: true,
-        }
-      }
+        },
+      },
     },
-    orderBy: { createdAt: 'desc' }
+    orderBy: { createdAt: 'desc' },
   });
 };
 
 // ============ SOLICITUDES DISPONIBLES (para técnico) ============
 
-export const findAvailable = () => {
+export const findAvailable = (category) => {
+  const where = {
+    status: 'PENDIENTE',
+    tecnicoId: null,
+  };
+
+  // Si se pasa categoría, filtrar por ella
+  if (category) {
+    where.category = category;
+  }
+
   return prisma.serviceRequest.findMany({
-    where: {
-      status: 'PENDIENTE',
-      tecnicoId: null,
-    },
+    where,
     include: {
       cliente: {
         select: {
@@ -91,17 +98,26 @@ export const findAvailable = () => {
           name: true,
           phone: true,
           address: true,
-        }
-      }
+        },
+      },
     },
-    orderBy: { createdAt: 'asc' }
+    orderBy: { createdAt: 'asc' },
   });
 };
 
 // ============ PARA ADMIN ============
 
 export const findAll = (filter) => {
-  const where = filter?.status ? { status: filter.status } : {};
+  const where = {};
+
+  if (filter?.status) {
+    where.status = filter.status;
+  }
+
+  if (filter?.category) {
+    where.category = filter.category;
+  }
+
   return prisma.serviceRequest.findMany({
     where,
     include: {
@@ -111,7 +127,7 @@ export const findAll = (filter) => {
           name: true,
           phone: true,
           email: true,
-        }
+        },
       },
       tecnico: {
         select: {
@@ -119,9 +135,9 @@ export const findAll = (filter) => {
           name: true,
           phone: true,
           email: true,
-        }
-      }
+        },
+      },
     },
-    orderBy: { createdAt: 'desc' }
+    orderBy: { createdAt: 'desc' },
   });
 };

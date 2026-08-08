@@ -39,6 +39,12 @@ export const registerValidator = [
     .isString()
     .withMessage('El teléfono debe ser un texto')
     .trim(),
+
+  body('address')
+    .optional()
+    .isString()
+    .withMessage('La dirección debe ser un texto')
+    .trim(),
 ];
 
 export const loginValidator = [

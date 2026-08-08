@@ -1,7 +1,8 @@
 import { body, param } from 'express-validator';
-import { SERVICE_STATUS } from '../utils/constants.js';
+import { SERVICE_STATUS, SERVICE_CATEGORIES } from '../utils/constants.js';
 
 const validStatuses = Object.values(SERVICE_STATUS);
+const validCategories = Object.values(SERVICE_CATEGORIES);
 
 export const createServiceRequestValidator = [
   body('title')
@@ -24,17 +25,22 @@ export const createServiceRequestValidator = [
     .notEmpty()
     .withMessage('La categoría es requerida')
     .bail()
-    .isString()
-    .withMessage('La categoría debe ser un texto')
-    .trim(),
+    .isIn(validCategories)
+    .withMessage(`La categoría debe ser: ${validCategories.join(', ')}`),
 
   body('address')
-    .notEmpty()
-    .withMessage('La dirección es requerida')
-    .bail()
+    .optional()
     .isString()
     .withMessage('La dirección debe ser un texto')
     .trim(),
+
+  body('scheduledDate')
+    .notEmpty()
+    .withMessage('La fecha y hora son requeridas')
+    .bail()
+    .isISO8601()
+    .withMessage('La fecha debe tener un formato válido (ISO 8601)')
+    .toDate(),
 ];
 
 export const serviceRequestParamValidator = [

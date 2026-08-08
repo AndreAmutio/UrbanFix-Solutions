@@ -5,7 +5,7 @@ import cloudinary from '../config/cloudinary.js';
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: 'urbanfix/technicians',
+    folder: 'urbanfix/users',
     allowed_formats: ['jpg', 'png', 'jpeg'],
   },
 });
