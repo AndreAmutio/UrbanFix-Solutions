@@ -11,8 +11,11 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:3001',
-        description: 'Local server',
+        url: process.env.API_URL || 'http://localhost:3001',
+        description:
+          process.env.NODE_ENV === 'production'
+            ? 'Production server'
+            : 'Local server',
       },
     ],
     components: {
@@ -31,9 +34,5 @@ const options = {
 const swaggerSpec = swaggerJsdoc(options);
 
 export const setupSwagger = (app) => {
-  app.use(
-    '/docs',
-    swaggerUi.serve,
-    swaggerUi.setup(swaggerSpec)
-  );
+  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 };

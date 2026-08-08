@@ -34,6 +34,11 @@ model User {
   name      String
   role      UserRole
   phone     String?
+  address String?
+
+  imageUrl   String?
+  imagePublicId String?
+  
   createdAt DateTime @default(now())
 
   solicitudes       ServiceRequest[] @relation("ClienteSolicitudes")
@@ -47,6 +52,9 @@ model ServiceRequest {
   category    String
   status      ServiceStatus   @default(PENDIENTE)
   address     String
+  scheduledDate DateTime?
+  imageUrl String?
+  imagePublicId String?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
