@@ -1,72 +1,127 @@
 import { prisma } from '../config/prisma.js';
 
+// ============ OPERACIONES BÁSICAS ============
+
 export const create = (data) => {
-  return prisma.serviceRequest.create({
-    data,
-    include: {
-      cliente: { select: { name: true, phone: true } },
-    },
-  });
+  return prisma.serviceRequest.create({ data });
 };
 
 export const findById = (id) => {
   return prisma.serviceRequest.findUnique({
     where: { id },
     include: {
-      cliente: { select: { name: true, phone: true, email: true } },
-      tecnico: { select: { name: true, phone: true } },
-    },
-  });
-};
-
-export const findByClienteId = (clienteId) => {
-  return prisma.serviceRequest.findMany({
-    where: { clienteId },
-    include: {
-      tecnico: { select: { name: true, phone: true } },
-    },
-    orderBy: { createdAt: 'desc' },
-  });
-};
-
-export const findAvailable = () => {
-  return prisma.serviceRequest.findMany({
-    where: { status: 'PENDIENTE', tecnicoId: null },
-    include: {
-      cliente: { select: { name: true } },
-    },
-    orderBy: { createdAt: 'desc' },
-  });
-};
-
-export const findByTecnicoId = (tecnicoId) => {
-  return prisma.serviceRequest.findMany({
-    where: { tecnicoId },
-    include: {
-      cliente: { select: { name: true, phone: true } },
-    },
-    orderBy: { createdAt: 'desc' },
+      cliente: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          email: true,
+          address: true,
+        }
+      },
+      tecnico: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          email: true,
+        }
+      }
+    }
   });
 };
 
 export const update = (id, data) => {
   return prisma.serviceRequest.update({
     where: { id },
-    data,
-    include: {
-      cliente: { select: { name: true, phone: true, email: true } },
-      tecnico: { select: { name: true, phone: true } },
-    },
+    data
   });
 };
 
-export const findAll = (filters = {}) => {
+// ============ PARA CLIENTE ============
+
+export const findByClient = (clienteId) => {
   return prisma.serviceRequest.findMany({
-    where: filters,
+    where: { clienteId },
     include: {
-      cliente: { select: { name: true, email: true } },
-      tecnico: { select: { name: true, email: true } },
+      tecnico: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          imageUrl: true,
+        }
+      }
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: 'desc' }
+  });
+};
+
+// ============ PARA TÉCNICO ============
+
+export const findByTechnician = (tecnicoId) => {
+  return prisma.serviceRequest.findMany({
+    where: { tecnicoId },
+    include: {
+      cliente: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          address: true,
+        }
+      }
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+};
+
+// ============ SOLICITUDES DISPONIBLES (para técnico) ============
+
+export const findAvailable = () => {
+  return prisma.serviceRequest.findMany({
+    where: {
+      status: 'PENDIENTE',
+      tecnicoId: null,
+    },
+    include: {
+      cliente: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          address: true,
+        }
+      }
+    },
+    orderBy: { createdAt: 'asc' }
+  });
+};
+
+// ============ PARA ADMIN ============
+
+export const findAll = (filter) => {
+  const where = filter?.status ? { status: filter.status } : {};
+  return prisma.serviceRequest.findMany({
+    where,
+    include: {
+      cliente: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          email: true,
+        }
+      },
+      tecnico: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          email: true,
+        }
+      }
+    },
+    orderBy: { createdAt: 'desc' }
   });
 };
