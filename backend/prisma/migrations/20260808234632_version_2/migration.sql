@@ -2,6 +2,9 @@
 CREATE TYPE "UserRole" AS ENUM ('CLIENTE', 'TECNICO', 'ADMIN');
 
 -- CreateEnum
+CREATE TYPE "Category" AS ENUM ('ELECTRICIDAD', 'PLOMERIA', 'INFORMATICA', 'GASISTAS');
+
+-- CreateEnum
 CREATE TYPE "ServiceStatus" AS ENUM ('PENDIENTE', 'ACEPTADA', 'EN_PROGRESO', 'COMPLETADA', 'RECHAZADA', 'CANCELADA');
 
 -- CreateTable
@@ -12,6 +15,9 @@ CREATE TABLE "User" (
     "name" TEXT NOT NULL,
     "role" "UserRole" NOT NULL,
     "phone" TEXT,
+    "address" TEXT,
+    "imageUrl" TEXT,
+    "imagePublicId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
@@ -22,9 +28,12 @@ CREATE TABLE "ServiceRequest" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "category" TEXT NOT NULL,
+    "category" "Category" NOT NULL,
     "status" "ServiceStatus" NOT NULL DEFAULT 'PENDIENTE',
     "address" TEXT NOT NULL,
+    "scheduledDate" TIMESTAMP(3),
+    "imageUrl" TEXT,
+    "imagePublicId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "clienteId" INTEGER NOT NULL,

@@ -18,6 +18,13 @@ enum UserRole {
   ADMIN
 }
 
+enum Category {
+  ELECTRICIDAD
+  PLOMERIA
+  INFORMATICA
+  GASISTAS
+} 
+
 enum ServiceStatus {
   PENDIENTE
   ACEPTADA
@@ -34,6 +41,11 @@ model User {
   name      String
   role      UserRole
   phone     String?
+  address String?
+
+  imageUrl   String?
+  imagePublicId String?
+  
   createdAt DateTime @default(now())
 
   solicitudes       ServiceRequest[] @relation("ClienteSolicitudes")
@@ -44,9 +56,12 @@ model ServiceRequest {
   id          Int             @id @default(autoincrement())
   title       String
   description String
-  category    String
+  category    Category
   status      ServiceStatus   @default(PENDIENTE)
   address     String
+  scheduledDate DateTime?
+  imageUrl String?
+  imagePublicId String?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
