@@ -4,7 +4,7 @@ import { authenticate } from '../middleware/auth.middleware.js';
 import { authorize } from '../middleware/role.middleware.js';
 import { validate } from '../middleware/validation.middleware.js';
 import { updateProfileValidator } from '../validators/user.validator.js';
-import { upload } from '../middleware/upload.middleware.js';
+import { uploadUserImage } from '../middleware/upload.middleware.js';
 
 const router = Router();
 
@@ -118,7 +118,7 @@ router.patch(
  */
 router.post(
   '/me/image',
-  upload.single('image'),
+  uploadUserImage.single('image'),
   userController.updateProfileImage,
 );
 
@@ -175,73 +175,5 @@ router.get('/me/client', userController.getClientProfile);
  *         description: No tenés permiso (solo TECNICO)
  */
 router.get('/me/technician', userController.getTechnicianProfile);
-
-// ============ ADMIN ============
-
-/**
- * @openapi
- * /api/admin/users:
- *   get:
- *     tags: [Admin]
- *     summary: Listar todos los usuarios
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Lista de usuarios
- *       401:
- *         description: Token no proporcionado o inválido
- *       403:
- *         description: No tenés permiso (solo ADMIN)
- */
-router.get('/admin/users', authorize('ADMIN'), userController.getAllUsers);
-
-/**
- * @openapi
- * /api/admin/technicians:
- *   get:
- *     tags: [Admin]
- *     summary: Listar solo técnicos
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Lista de técnicos
- *       401:
- *         description: Token no proporcionado o inválido
- *       403:
- *         description: No tenés permiso (solo ADMIN)
- */
-router.get(
-  '/admin/technicians',
-  authorize('ADMIN'),
-  userController.getTechnicians,
-);
-
-/**
- * @openapi
- * /api/admin/users/{id}:
- *   get:
- *     tags: [Admin]
- *     summary: Obtener usuario por ID
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Usuario encontrado
- *       401:
- *         description: Token no proporcionado o inválido
- *       403:
- *         description: No tenés permiso (solo ADMIN)
- *       404:
- *         description: Usuario no encontrado
- */
-router.get('/admin/users/:id', authorize('ADMIN'), userController.getUserById);
 
 export default router;

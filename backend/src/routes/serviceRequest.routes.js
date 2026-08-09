@@ -3,7 +3,7 @@ import * as controller from '../controllers/serviceRequest.controller.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { authorize } from '../middleware/role.middleware.js';
 import { validate } from '../middleware/validation.middleware.js';
-import { upload } from '../middleware/upload.middleware.js';
+import { uploadRequestImage } from '../middleware/upload.middleware.js';
 import {
   createServiceRequestValidator,
   serviceRequestParamValidator,
@@ -252,8 +252,7 @@ router.get(
 router.post(
   '/:id/imagen',
   authenticate,
-  validate(serviceRequestParamValidator),
-  upload.single('image'),
+  uploadRequestImage.single('image'),
   controller.updateRequestImage,
 );
 
@@ -285,93 +284,6 @@ router.delete(
   authenticate,
   validate(serviceRequestParamValidator),
   controller.removeRequestImage,
-);
-
-// ============ ADMIN ============
-
-/**
- * @openapi
- * /api/admin/solicitudes:
- *   get:
- *     tags: [Admin]
- *     summary: Listar todas las solicitudes (con filtro opcional)
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: status
- *         schema:
- *           type: string
- *           enum: [PENDIENTE, ACEPTADA, EN_PROGRESO, COMPLETADA, RECHAZADA, CANCELADA]
- *         description: Filtrar por estado
- *       - in: query
- *         name: category
- *         schema:
- *           type: string
- *           enum: [ELECTRICIDAD, PLOMERIA, INFORMATICA, GASISTAS]
- *         description: Filtrar por categoría
- *     responses:
- *       200:
- *         description: Lista de solicitudes
- *       400:
- *         description: Status o categoría inválido
- *       401:
- *         description: Token no proporcionado o inválido
- *       403:
- *         description: No tenés permiso (solo ADMIN)
- */
-router.get(
-  '/admin/solicitudes',
-  authenticate,
-  authorize('ADMIN'),
-  controller.getAllRequests,
-);
-
-/**
- * @openapi
- * /api/admin/solicitudes/{id}/estado:
- *   patch:
- *     tags: [Admin]
- *     summary: Cambiar estado de una solicitud
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID de la solicitud
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [status]
- *             properties:
- *               status:
- *                 type: string
- *                 enum: [PENDIENTE, ACEPTADA, EN_PROGRESO, COMPLETADA, RECHAZADA, CANCELADA]
- *                 example: COMPLETADA
- *     responses:
- *       200:
- *         description: Estado actualizado
- *       400:
- *         description: Error de validación o status inválido
- *       401:
- *         description: Token no proporcionado o inválido
- *       403:
- *         description: No tenés permiso (solo ADMIN)
- *       404:
- *         description: Solicitud no encontrada
- */
-router.patch(
-  '/admin/solicitudes/:id/estado',
-  authenticate,
-  authorize('ADMIN'),
-  validate(updateStatusValidator),
-  controller.updateRequestStatus,
 );
 
 export default router;
