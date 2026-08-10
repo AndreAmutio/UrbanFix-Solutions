@@ -1,18 +1,55 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
+
 import { useAuth } from "../../context/AuthContext";
-import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import api from "../../services/api";
 
+import imagenPortada from "../../assets/imagenes/2.jpeg";
+
+const registerContent = {
+  CLIENTE: {
+    badge: "Cuenta de cliente",
+    title: "Solicitá servicios de confianza",
+    description:
+      "Creá tu cuenta para encontrar técnicos y gestionar tus solicitudes.",
+    buttonText: "Crear cuenta de cliente",
+    badgeClasses: "bg-blue-100 text-blue-700",
+    buttonClasses: "bg-[#1976FF] hover:bg-[#0f65e8] focus:ring-blue-300",
+    footerText:
+      "La dirección del trabajo se solicitará al crear cada servicio.",
+  },
+
+  TECNICO: {
+    badge: "Cuenta de técnico",
+    title: "Ofrecé tus servicios en UrbanFix",
+    description:
+      "Creá tu cuenta y conectate con clientes que necesitan tu trabajo.",
+    buttonText: "Crear cuenta de técnico",
+    badgeClasses: "bg-cyan-100 text-cyan-700",
+    buttonClasses: "bg-[#0891B2] hover:bg-[#0E7490] focus:ring-cyan-300",
+    footerText:
+      "Después podrás consultar las solicitudes de servicio disponibles.",
+  },
+};
+
 export default function Register() {
+  const [searchParams] = useSearchParams();
+
+  const requestedRole = searchParams.get("role")?.toUpperCase();
+  const role = requestedRole === "TECNICO" ? "TECNICO" : "CLIENTE";
+  const content = registerContent[role];
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     password: "",
     confirmPassword: "",
-    role: "CLIENTE",
   });
 
   const [error, setError] = useState("");
@@ -21,17 +58,17 @@ export default function Register() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const handleChange = (event) => {
+    const { name, value } = event.target;
 
-    setFormData({
-      ...formData,
+    setFormData((currentData) => ({
+      ...currentData,
       [name]: value,
-    });
+    }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setError("");
 
     if (formData.password.length < 8) {
@@ -48,12 +85,17 @@ export default function Register() {
 
     try {
       const registerData = {
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
+        name: formData.name.trim(),
+        email: formData.email.trim(),
         password: formData.password,
-        role: formData.role,
+        role,
       };
+
+      const phone = formData.phone.trim();
+
+      if (phone) {
+        registerData.phone = phone;
+      }
 
       const { data } = await api.post("/auth/register", registerData);
 
@@ -64,10 +106,14 @@ export default function Register() {
         TECNICO: "/tecnico",
       };
 
-      navigate(redirects[data.user.role] || "/");
+      navigate(redirects[data.user.role] || "/", {
+        replace: true,
+      });
     } catch (err) {
       setError(
-        err.response?.data?.error || "Error al crear la cuenta",
+        err.response?.data?.error ||
+          err.response?.data?.message ||
+          "Error al crear la cuenta",
       );
     } finally {
       setLoading(false);
@@ -75,29 +121,51 @@ export default function Register() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8">
-      <div className="bg-white p-8 rounded-xl shadow-sm w-full max-w-md">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Crear una cuenta
+    <main
+      className="relative flex min-h-screen items-center justify-center bg-cover bg-center px-4 py-12"
+      style={{ backgroundImage: `url(${imagenPortada})` }}
+    >
+      <div className="absolute inset-0 bg-[#0B1F3A]/80" />
+
+      <Link
+        to="/"
+        className="absolute left-6 top-6 z-20 text-2xl font-extrabold text-white"
+      >
+        Urban<span className="text-[#2DA8FF]">Fix</span>
+      </Link>
+
+      <section className="relative z-10 w-full max-w-lg rounded-3xl bg-white p-7 shadow-2xl sm:p-10">
+        <span
+          className={`inline-flex rounded-full px-4 py-1.5 text-sm font-semibold ${content.badgeClasses}`}
+        >
+          {content.badge}
+        </span>
+
+        <h1 className="mt-5 text-3xl font-extrabold text-[#0B1F3A]">
+          {content.title}
         </h1>
 
-        <p className="text-gray-600 mb-6">
-          Registrate como cliente o técnico.
+        <p className="mt-3 leading-6 text-gray-600">
+          {content.description}
         </p>
 
         {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded mb-4">
+          <div
+            role="alert"
+            className="mt-6 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+          >
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="mt-7 space-y-4">
           <Input
             label="Nombre completo"
             name="name"
             type="text"
             value={formData.name}
             onChange={handleChange}
+            required
           />
 
           <Input
@@ -106,10 +174,11 @@ export default function Register() {
             type="email"
             value={formData.email}
             onChange={handleChange}
+            required
           />
 
           <Input
-            label="Teléfono"
+            label="Teléfono (opcional)"
             name="phone"
             type="tel"
             value={formData.phone}
@@ -122,6 +191,7 @@ export default function Register() {
             type="password"
             value={formData.password}
             onChange={handleChange}
+            required
           />
 
           <Input
@@ -130,44 +200,32 @@ export default function Register() {
             type="password"
             value={formData.confirmPassword}
             onChange={handleChange}
+            required
           />
 
-          <div>
-            <p className="font-medium text-gray-700 mb-2">
-              ¿Cómo querés utilizar UrbanFix?
-            </p>
-
-            <label className="flex items-center gap-2 mb-2 text-gray-700">
-              <input
-                type="radio"
-                name="role"
-                value="CLIENTE"
-                checked={formData.role === "CLIENTE"}
-                onChange={handleChange}
-              />
-              Necesito contratar un servicio
-            </label>
-
-            <label className="flex items-center gap-2 text-gray-700">
-              <input
-                type="radio"
-                name="role"
-                value="TECNICO"
-                checked={formData.role === "TECNICO"}
-                onChange={handleChange}
-              />
-              Quiero ofrecer mis servicios
-            </label>
-          </div>
-
-          <Button type="submit" disabled={loading}>
-            {loading ? "Creando cuenta..." : "Registrarme"}
-          </Button>
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full rounded-lg px-6 py-3 font-semibold text-white transition focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:opacity-60 ${content.buttonClasses}`}
+          >
+            {loading ? "Creando cuenta..." : content.buttonText}
+          </button>
         </form>
-        <p className="text-center text-gray-600 mt-6"> ¿Ya tenés una cuenta?{" "}
-         <Link to="/login" className="text-blue-600 font-medium hover:underline"> Iniciar sesión </Link>
+
+        <p className="mt-6 text-center text-gray-600">
+          ¿Ya tenés una cuenta?{" "}
+          <Link
+            to="/login"
+            className="font-semibold text-[#1976FF] hover:underline"
+          >
+            Iniciar sesión
+          </Link>
         </p>
-      </div>
+
+        <p className="mt-4 text-center text-sm text-gray-500">
+          {content.footerText}
+        </p>
+      </section>
     </main>
   );
 }
