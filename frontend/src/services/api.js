@@ -4,7 +4,7 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
 });
 
-// Agrega el token antes de enviar una petición.
+// Hay q agregar el token antes de enviar una petición.
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
 
