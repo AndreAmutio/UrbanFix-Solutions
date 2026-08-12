@@ -8,8 +8,8 @@ const statusConfig = {
     styles: "bg-blue-100 text-blue-700",
   },
   EN_PROGRESO: {
-    label: "En progreso",
-    styles: "bg-violet-100 text-violet-700",
+     label: "En progreso",
+    styles: "bg-yellow-100 text-yellow-700",
   },
   COMPLETADA: {
     label: "Completada",
@@ -25,7 +25,7 @@ const statusConfig = {
   },
 };
 
-export default function SolicitudCard({ request }) {
+export default function SolicitudCard({ request, children }) {
   const status = (request.status || request.estado || "PENDIENTE")
     .trim()
     .toUpperCase()
@@ -61,17 +61,25 @@ export default function SolicitudCard({ request }) {
           {request.scheduledDate && (
             <p className="mt-1 text-sm text-slate-600">
               📅{" "}
-              {new Date(request.scheduledDate).toLocaleString("es-AR")}
+              {new Date(request.scheduledDate).toLocaleString(
+                "es-AR",
+              )}
             </p>
           )}
         </div>
 
         <span
-          className={`w-fit rounded-full px-3 py-1 text-xs font-bold ${statusInfo.styles}`}
+          className={`w-fit rounded-full px-4 py-2 text-m font-bold shadow-sm ${statusInfo.styles}`}  
         >
           {statusInfo.label}
         </span>
       </div>
+
+      {children && (
+        <div className="mt-5 flex justify-end border-t border-slate-100 pt-4">
+          {children}
+        </div>
+      )}
     </article>
   );
 }
