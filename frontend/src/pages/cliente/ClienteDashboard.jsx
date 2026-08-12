@@ -1,3 +1,4 @@
+import SolicitudCard from "../../components/SolicitudCard";
 import { RequestForm } from "./RequestForm";
 import api from "../../services/api";
 import { useEffect, useState } from "react";
@@ -95,6 +96,29 @@ export default function ClienteDashboard() {
     loadRequests();
   }, []);
 
+  const requestCounts = requests.reduce(
+    (counts, request) => {
+      const status = (request.status || request.estado || "")
+        .trim()
+        .toUpperCase();
+
+      if (status === "PENDIENTE") {
+        counts.pending += 1;
+      }
+      if (status === "ACEPTADA" || status === "EN_PROGRESO") {
+        counts.inProgress += 1;
+      }
+      if (status === "COMPLETADA") {
+        counts.completed += 1;
+      }
+      return counts;
+    },
+    {
+      pending: 0,
+      inProgress: 0,
+      completed: 0,
+    },
+  );
 
   const firstName = user?.name?.split(" ")[0] || "cliente";
 
@@ -193,11 +217,7 @@ export default function ClienteDashboard() {
             <span className="inline-flex rounded-full bg-blue-400/15 px-4 py-2 text-sm font-semibold text-blue-200">
               Panel del cliente
             </span>
-
-            <h1 className="mt-5 text-4xl font-extrabold sm:text-5xl">
-              Hola, {firstName}
-            </h1>
-
+            <h1 className="mt-5 text-4xl font-extrabold sm:text-5xl"> Hola, {firstName}</h1>
             <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-300">
               Encontrá profesionales, solicitá un servicio y seguí cada
               trabajo desde un solo lugar.
@@ -214,18 +234,18 @@ export default function ClienteDashboard() {
 
           <div className="grid grid-cols-3 gap-3">
             <div className="rounded-2xl bg-white/10 p-4 text-center backdrop-blur">
-              <p className="text-3xl font-extrabold">0</p>
+              <p className="text-3xl font-extrabold"> {requestCounts.pending} </p>
               <p className="mt-1 text-xs text-slate-300">Pendientes</p>
             </div>
 
             <div className="rounded-2xl bg-white/10 p-4 text-center backdrop-blur">
-              <p className="text-3xl font-extrabold">0</p>
-              <p className="mt-1 text-xs text-slate-300">En curso</p>
+              <p className="text-3xl font-extrabold"> {requestCounts.inProgress} </p>
+              <p className="mt-1 text-xs text-slate-300"> En curso </p>
             </div>
 
             <div className="rounded-2xl bg-white/10 p-4 text-center backdrop-blur">
-              <p className="text-3xl font-extrabold">0</p>
-              <p className="mt-1 text-xs text-slate-300">Finalizadas</p>
+              <p className="text-3xl font-extrabold"> {requestCounts.completed} </p>
+              <p className="mt-1 text-xs text-slate-300">Finalizadas </p>
             </div>
           </div>
         </div>
@@ -234,17 +254,9 @@ export default function ClienteDashboard() {
       <div className="mx-auto max-w-7xl space-y-10 px-5 py-10 sm:px-8">
         <section id="servicios">
           <div>
-            <p className="font-semibold text-[#1976FF]">
-              Servicios disponibles
-            </p>
-
-            <h2 className="mt-1 text-3xl font-extrabold text-[#0B1F3A]">
-              ¿Qué necesitás solucionar?
-            </h2>
-
-            <p className="mt-2 text-slate-500">
-              Elegí una categoría para comenzar tu solicitud.
-            </p>
+            <p className="font-semibold text-[#1976FF]"> Servicios disponibles</p>
+            <h2 className="mt-1 text-3xl font-extrabold text-[#0B1F3A]"> ¿Qué necesitás solucionar? </h2>
+            <p className="mt-2 text-slate-500"> Elegí una categoría para comenzar tu solicitud. </p>
           </div>
 
           <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -253,9 +265,7 @@ export default function ClienteDashboard() {
                 key={service.category}
                 {...service}
                 onClick={() =>
-                  handleSelectCategory(service.category)
-                }
-              />
+                  handleSelectCategory(service.category)} />
             ))}
           </div>
 
@@ -271,19 +281,14 @@ export default function ClienteDashboard() {
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="font-semibold text-[#1976FF]">
-                Nueva solicitud
-              </p>
-
+              <p className="font-semibold text-[#1976FF]"> Nueva solicitud </p>
               <h2 className="mt-1 text-2xl font-extrabold text-[#0B1F3A]">
                 Contanos qué trabajo necesitás
               </h2>
-
               <p className="mt-2 text-sm text-slate-500">
                 El formulario utilizará los campos admitidos por el backend.
               </p>
             </div>
-
             {selectedCategory && (
               <span className="w-fit rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700">
                 {
@@ -295,12 +300,7 @@ export default function ClienteDashboard() {
               </span>
             )}
           </div>
-
-          <RequestForm selectedCategory={selectedCategory}
-            selectedCategory={selectedCategory}
-            onCreated={loadRequests}
-          />
-
+          <RequestForm selectedCategory={selectedCategory} onCreated={loadRequests} />
         </section>
 
         <section
@@ -308,15 +308,10 @@ export default function ClienteDashboard() {
           className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
         >
           <div>
-            <h2 className="text-2xl font-extrabold text-[#0B1F3A]">
-              Mis solicitudes
-            </h2>
+            <h2 className="text-2xl font-extrabold text-[#0B1F3A]"> Mis solicitudes </h2>
 
-            <p className="mt-2 text-slate-500">
-              Seguí el estado de los servicios que solicitaste.
-            </p>
+            <p className="mt-2 text-slate-500"> Seguí el estado de los servicios que solicitaste.</p>
           </div>
-
           {loadingRequests ? (
             <div className="mt-7 rounded-2xl bg-slate-50 p-8 text-center text-slate-500">
               Cargando solicitudes...
@@ -328,11 +323,9 @@ export default function ClienteDashboard() {
           ) : requests.length === 0 ? (
             <div className="mt-7 flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 text-center">
               <span className="text-5xl">🛠️</span>
-
               <h3 className="mt-4 text-lg font-bold text-[#0B1F3A]">
                 Todavía no tenés solicitudes
               </h3>
-
               <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
                 Cuando crees una solicitud aparecerá acá con su categoría,
                 fecha, técnico asignado y estado.
@@ -349,45 +342,10 @@ export default function ClienteDashboard() {
           ) : (
             <div className="mt-7 grid gap-4">
               {requests.map((request) => (
-                <article
+                <SolicitudCard
                   key={request.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-                >
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-[#1976FF]">
-                        {request.category}
-                      </p>
-
-                      <h3 className="mt-1 text-lg font-bold text-[#0B1F3A]">
-                        {request.title}
-                      </h3>
-
-                      <p className="mt-2 text-sm leading-6 text-slate-500">
-                        {request.description}
-                      </p>
-
-                      {request.address && (
-                        <p className="mt-3 text-sm text-slate-600">
-                          📍 {request.address}
-                        </p>
-                      )}
-
-                      {request.scheduledDate && (
-                        <p className="mt-1 text-sm text-slate-600">
-                          📅{" "}
-                          {new Date(request.scheduledDate).toLocaleString(
-                            "es-AR",
-                          )}
-                        </p>
-                      )}
-                    </div>
-
-                    <span className="w-fit rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">
-                      {request.status || request.estado || "PENDIENTE"}
-                    </span>
-                  </div>
-                </article>
+                  request={request}
+                />
               ))}
             </div>
           )}
@@ -395,9 +353,7 @@ export default function ClienteDashboard() {
 
         <section id="mi-cuenta">
           <div>
-            <p className="font-semibold text-[#1976FF]">
-              Mi cuenta
-            </p>
+            <p className="font-semibold text-[#1976FF]"> Mi cuenta </p>
 
             <h2 className="mt-1 text-2xl font-extrabold text-[#0B1F3A]">
               Perfil y preferencias
@@ -414,9 +370,7 @@ export default function ClienteDashboard() {
                 </span>
               </div>
 
-              <h3 className="mt-4 font-bold text-[#0B1F3A]">
-                Dirección principal
-              </h3>
+              <h3 className="mt-4 font-bold text-[#0B1F3A]"> Dirección principal </h3>
 
               <p className="mt-2 text-sm leading-6 text-slate-600">
                 Voy a poder consultar y modificar la dirección admitida por el
