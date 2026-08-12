@@ -7,7 +7,6 @@ export function Navbar() {
         <Link to="/" className="text-2xl font-extrabold text-white">
           Urban<span className="text-[#2DA8FF]">Fix</span>
         </Link>
-
         <div className="hidden items-center gap-7 md:flex">
           <Link
             to="/"
@@ -15,18 +14,15 @@ export function Navbar() {
           >
             Inicio
           </Link>
-
           <a href="#nosotros" className="font-medium text-white hover:text-[#2DA8FF]">
             Nosotros
           </a>
-
           <a
             href="#servicios"
             className="font-medium text-white transition hover:text-[#2DA8FF]"
           >
             Servicios
           </a>
-
           <a
             href="#como-funciona"
             className="font-medium text-white transition hover:text-[#2DA8FF]"
