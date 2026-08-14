@@ -1,82 +1,184 @@
 const statusConfig = {
   PENDIENTE: {
     label: "Pendiente",
-    styles: "bg-amber-100 text-amber-700",
+    styles: "border-amber-200 bg-amber-50 text-amber-800",
+    dot: "bg-amber-500",
   },
   ACEPTADA: {
     label: "Aceptada",
-    styles: "bg-blue-100 text-blue-700",
+    styles: "border-blue-200 bg-blue-50 text-blue-800",
+    dot: "bg-blue-500",
   },
   EN_PROGRESO: {
-     label: "En progreso",
-    styles: "bg-yellow-100 text-yellow-700",
+    label: "En progreso",
+    styles: "border-yellow-200 bg-yellow-50 text-yellow-800",
+    dot: "bg-yellow-500",
   },
   COMPLETADA: {
     label: "Completada",
-    styles: "bg-emerald-100 text-emerald-700",
+    styles: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    dot: "bg-emerald-500",
   },
   RECHAZADA: {
     label: "Rechazada",
-    styles: "bg-red-100 text-red-700",
+    styles: "border-red-200 bg-red-50 text-red-800",
+    dot: "bg-red-500",
   },
   CANCELADA: {
     label: "Cancelada",
-    styles: "bg-slate-200 text-slate-700",
+    styles: "border-slate-300 bg-slate-100 text-slate-700",
+    dot: "bg-slate-500",
   },
 };
 
-export default function SolicitudCard({ request, children }) {
-  const status = (request.status || request.estado || "PENDIENTE")
+const categoryConfig = {
+  ELECTRICIDAD: {
+    label: "Electricidad",
+    icon: "⚡",
+    accent: "border-l-amber-400",
+    badge: "border-amber-200 bg-amber-50 text-amber-800",
+  },
+  PLOMERIA: {
+    label: "Plomería",
+    icon: "💧",
+    accent: "border-l-cyan-500",
+    badge: "border-cyan-200 bg-cyan-50 text-cyan-800",
+  },
+  INFORMATICA: {
+    label: "Informática",
+    icon: "🖥️",
+    accent: "border-l-indigo-500",
+    badge: "border-indigo-200 bg-indigo-50 text-indigo-800",
+  },
+  GASISTAS: {
+    label: "Gas",
+    icon: "🔥",
+    accent: "border-l-orange-500",
+    badge: "border-orange-200 bg-orange-50 text-orange-800",
+  },
+  GAS: {
+    label: "Gas",
+    icon: "🔥",
+    accent: "border-l-orange-500",
+    badge: "border-orange-200 bg-orange-50 text-orange-800",
+  },
+};
+
+const normalizeValue = (value) =>
+  String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .trim()
     .toUpperCase()
     .replace(/\s+/g, "_");
 
+const formatScheduledDate = (date) => {
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return String(date);
+  }
+
+  return new Intl.DateTimeFormat("es-AR", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(parsedDate);
+};
+
+export default function SolicitudCard({
+  request = {},
+  children,
+}) {
+  const status = normalizeValue(
+    request.status || request.estado || "PENDIENTE",
+  );
+
   const statusInfo = statusConfig[status] || {
     label: status.replaceAll("_", " "),
-    styles: "bg-slate-100 text-slate-700",
+    styles: "border-slate-200 bg-slate-50 text-slate-700",
+    dot: "bg-slate-400",
   };
 
+  const category = normalizeValue(
+    request.category || request.categoria || "SERVICIO",
+  );
+
+  const categoryInfo = categoryConfig[category] || {
+    label:
+      request.category ||
+      request.categoria ||
+      "Servicio técnico",
+    icon: "🛠️",
+    accent: "border-l-blue-500",
+    badge: "border-blue-200 bg-blue-50 text-blue-800",
+  };
+
+  const title =
+    request.title ||
+    request.titulo ||
+    "Solicitud de servicio";
+
+  const description =
+    request.description || request.descripcion;
+
+  const address = request.address || request.direccion;
+
+  const scheduledDate =
+    request.scheduledDate || request.fechaProgramada;
+
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-sm font-semibold text-[#1976FF]">
-            {request.category}
-          </p>
-
-          <h3 className="mt-1 text-lg font-bold text-[#0B1F3A]">
-            {request.title}
-          </h3>
-
-          <p className="mt-2 text-sm leading-6 text-slate-500">
-            {request.description}
-          </p>
-
-          {request.address && (
-            <p className="mt-3 text-sm text-slate-600">
-              📍 {request.address}
-            </p>
-          )}
-
-          {request.scheduledDate && (
-            <p className="mt-1 text-sm text-slate-600">
-              📅{" "}
-              {new Date(request.scheduledDate).toLocaleString(
-                "es-AR",
-              )}
-            </p>
-          )}
-        </div>
+    <article
+      className={`group overflow-hidden rounded-2xl border border-l-4 border-slate-200 ${categoryInfo.accent} bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-lg`}
+    >
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <span
+          className={`inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-bold ${categoryInfo.badge}`}
+        >
+          <span aria-hidden="true">{categoryInfo.icon}</span>
+          {categoryInfo.label}
+        </span>
 
         <span
-          className={`w-fit rounded-full px-4 py-2 text-m font-bold shadow-sm ${statusInfo.styles}`}  
+          className={`inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-bold ${statusInfo.styles}`}
         >
+          <span
+            aria-hidden="true"
+            className={`h-2.5 w-2.5 rounded-full ${statusInfo.dot}`}
+          />
           {statusInfo.label}
         </span>
       </div>
 
+      <h3 className="mt-4 text-xl font-bold leading-7 text-[#0B1F3A]">
+        {title}
+      </h3>
+
+      {description && (
+        <p className="mt-2 text-base leading-7 text-slate-600">
+          {description}
+        </p>
+      )}
+
+      {(address || scheduledDate) && (
+        <div className="mt-4 grid gap-2 rounded-xl border border-slate-100 bg-slate-50/80 p-3 text-base text-slate-600">
+          {address && (
+            <p className="flex items-start gap-2">
+              <span aria-hidden="true">📍</span>
+              <span>{address}</span>
+            </p>
+          )}
+
+          {scheduledDate && (
+            <p className="flex items-start gap-2">
+              <span aria-hidden="true">📅</span>
+              <span>{formatScheduledDate(scheduledDate)}</span>
+            </p>
+          )}
+        </div>
+      )}
+
       {children && (
-        <div className="mt-5 flex justify-end border-t border-slate-100 pt-4">
+        <div className="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end [&>button]:w-full sm:[&>button]:w-auto">
           {children}
         </div>
       )}

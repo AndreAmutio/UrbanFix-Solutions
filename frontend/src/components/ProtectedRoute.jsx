@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-export default function ProtectedRoute({ children, role }) { //children: panel agregao que se quiere proteger /role: rol requerido por la ruta
+export default function ProtectedRoute({ children, role }) { //children: panel agregado que se quiere proteger/role: rol requerido por la ruta
   const { user, token, loading } = useAuth(); //obtengo el usuario
 
   if (loading) {
