@@ -157,6 +157,41 @@ router.patch(
 
 /**
  * @openapi
+ * /api/solicitudes/{id}/rechazar:
+ *   patch:
+ *     tags: [Solicitudes]
+ *     summary: Rechazar una solicitud asignada al técnico
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la solicitud
+ *     responses:
+ *       200:
+ *         description: Solicitud rechazada correctamente
+ *       400:
+ *         description: ID inválido
+ *       401:
+ *         description: Token no proporcionado o inválido
+ *       403:
+ *         description: No tenés permiso o la solicitud no pertenece al técnico autenticado
+ *       404:
+ *         description: Solicitud no encontrada
+ */
+router.patch(
+  '/:id/rechazar',
+  authenticate,
+  authorize('TECNICO'),
+  validate(serviceRequestParamValidator),
+  controller.rejectRequest,
+);
+
+/**
+ * @openapi
  * /api/solicitudes/mis-trabajos:
  *   get:
  *     tags: [Solicitudes]

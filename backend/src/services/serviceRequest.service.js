@@ -122,6 +122,39 @@ export const acceptRequest = async (tecnicoId, requestId) => {
   return updatedRequest;
 };
 
+export const rejectRequest = async (tecnicoId, requestId) => {
+  // Validar que el técnico exista
+  const tecnico = await userRepo.findById(tecnicoId);
+  if (!tecnico) {
+    throw new NotFoundError('Técnico no encontrado');
+  }
+
+  if (tecnico.role !== USER_ROLES.TECNICO) {
+    throw new AuthorizationError(
+      'Solo los técnicos pueden rechazar solicitudes',
+    );
+  }
+
+  // Buscar la solicitud
+  const request = await serviceRequestRepo.findById(requestId);
+  if (!request) {
+    throw new NotFoundError('Solicitud no encontrada');
+  }
+
+  // Validar que la solicitud pertenezca al técnico autenticado
+  if (request.tecnicoId !== tecnicoId) {
+    throw new AuthorizationError('No podés rechazar esta solicitud');
+  }
+
+  // Actualizar solicitud
+  const updatedRequest = await serviceRequestRepo.update(requestId, {
+    status: SERVICE_STATUS.RECHAZADA,
+    tecnicoId: null,
+  });
+
+  return updatedRequest;
+};
+
 export const getTechnicianJobs = async (tecnicoId) => {
   const tecnico = await userRepo.findById(tecnicoId);
   if (!tecnico) {
