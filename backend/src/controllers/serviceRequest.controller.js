@@ -52,6 +52,22 @@ export const acceptRequest = async (req, res, next) => {
   }
 };
 
+export const rejectRequest = async (req, res, next) => {
+  try {
+    const tecnicoId = req.user.userId;
+    const { id } = req.params;
+
+    const request = await serviceRequestService.rejectRequest(
+      tecnicoId,
+      Number(id),
+    );
+
+    res.status(200).json(request);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getTechnicianJobs = async (req, res, next) => {
   try {
     const tecnicoId = req.user.userId;
