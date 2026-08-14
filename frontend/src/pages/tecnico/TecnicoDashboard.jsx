@@ -1,3 +1,5 @@
+import { Footer } from "../../components/Footer";
+
 import { useEffect, useState } from "react";
 
 import { useAuth } from "../../context/AuthContext";
@@ -649,6 +651,8 @@ export default function TecnicoDashboard() {
           </section>
         </div>
       )}
+       <Footer />
     </div>
+    
   );
 }

@@ -1,3 +1,5 @@
+import logoCasita from "../assets/logos/casita.png";
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -22,13 +24,24 @@ export function Navbar() {
 
   return (
     <nav className="fixed left-0 top-0 z-50 w-full border-b border-white/20 bg-[#0B1F3A]/70 shadow-lg shadow-slate-950/10 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-10">
+      <div className="flex w-full items-center justify-between px-5 py-4 sm:px-8 lg:px-12">
         <Link
           to="/"
           onClick={closeMenu}
-          className="text-2xl font-extrabold text-white"
+          aria-label="Ir al inicio de UrbanFix"
+          className="flex items-center gap-4"
         >
-          Urban<span className="text-[#2DA8FF]">Fix</span>
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden">
+            <img
+              src={logoCasita}
+              alt=""
+              className="h-full w-full scale-[2.4] object-contain"
+            />
+          </span>
+
+          <span className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+            Urban<span className="text-[#2DA8FF]">Fix</span>
+          </span>
         </Link>
 
         {/* Navegación para escritorio */}
@@ -88,19 +101,16 @@ export function Navbar() {
           className="flex h-11 w-11 flex-col items-center justify-center gap-1.5 rounded-xl border border-white/25 bg-white/10 text-white transition hover:bg-white/20 md:hidden"
         >
           <span
-            className={`h-0.5 w-5 bg-current transition ${
-              menuOpen ? "translate-y-2 rotate-45" : ""
-            }`}
+            className={`h-0.5 w-5 bg-current transition ${menuOpen ? "translate-y-2 rotate-45" : ""
+              }`}
           />
           <span
-            className={`h-0.5 w-5 bg-current transition ${
-              menuOpen ? "opacity-0" : ""
-            }`}
+            className={`h-0.5 w-5 bg-current transition ${menuOpen ? "opacity-0" : ""
+              }`}
           />
           <span
-            className={`h-0.5 w-5 bg-current transition ${
-              menuOpen ? "-translate-y-2 -rotate-45" : ""
-            }`}
+            className={`h-0.5 w-5 bg-current transition ${menuOpen ? "-translate-y-2 -rotate-45" : ""
+              }`}
           />
         </button>
       </div>

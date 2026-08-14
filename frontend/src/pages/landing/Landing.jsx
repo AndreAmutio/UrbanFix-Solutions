@@ -1,3 +1,4 @@
+import { Footer } from "../../components/Footer";
 import { Link } from "react-router-dom";
 import { Navbar } from "../../components/Navbar";
 
@@ -274,66 +275,9 @@ function Landing() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer id="ayuda" className="bg-[#0B1F3A] px-6 py-12 text-white">
-        <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-3">
-          <div>
-            <p className="text-2xl font-extrabold">
-              Urban<span className="text-[#2DA8FF]">Fix</span>
-            </p>
-
-            <p className="mt-4 max-w-sm leading-6 text-gray-300">
-              Conectamos clientes con profesionales para solucionar las
-              necesidades del hogar, comercio u oficina.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="font-bold">Navegación</h3>
-
-            <div className="mt-4 flex flex-col gap-3 text-gray-300">
-              <a href="#inicio" className="hover:text-white">
-                Inicio
-              </a>
-              <a href="#nosotros" className="hover:text-white">
-                Nosotros
-              </a>
-              <a href="#servicios" className="hover:text-white">
-                Servicios
-              </a>
-              <a href="#como-funciona" className="hover:text-white">
-                Cómo funciona
-              </a>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="font-bold">Tu cuenta</h3>
-
-            <div className="mt-4 flex flex-col gap-3 text-gray-300">
-              <Link to="/login" className="hover:text-white">
-                Iniciar sesión
-              </Link>
-              <Link to="/register" className="hover:text-white">
-                Registrarse
-              </Link>
-              <Link
-                to="/register?role=TECNICO"
-                className="hover:text-white"
-              >
-                Trabajar como técnico
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        <div className="mx-auto mt-10 max-w-7xl border-t border-white/20 pt-6 text-center text-sm text-gray-400">
-          © {new Date().getFullYear()} UrbanFix Solutions. Todos los derechos
-          reservados.
-        </div>
-      </footer>
+     <Footer />
     </main>
+    
   );
 }
 
