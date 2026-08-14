@@ -12,35 +12,35 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Landing/>}/>
-        <Route path="/login" element={<Login/>}/>
-        <Route path="/register" element={<Register/>}/>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route
-  path="/cliente"
-  element={
-    <ProtectedRoute role="CLIENTE">
-      <ClienteDashboard />
-    </ProtectedRoute>
-  }
-/>
+          path="/cliente"
+          element={
+            <ProtectedRoute role="CLIENTE">
+              <ClienteDashboard />
+            </ProtectedRoute>
+          }
+        />
 
-<Route
-  path="/tecnico"
-  element={
-    <ProtectedRoute role="TECNICO">
-      <TecnicoDashboard />
-    </ProtectedRoute>
-  }
-/>
+        <Route
+          path="/tecnico"
+          element={
+            <ProtectedRoute role="TECNICO">
+              <TecnicoDashboard />
+            </ProtectedRoute>
+          }
+        />
 
-<Route
-  path="/admin"
-  element={
-    <ProtectedRoute role="ADMIN">
-      <AdminDashboard />
-    </ProtectedRoute>
-  }
-/>
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute role="ADMIN">
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
