@@ -132,6 +132,9 @@ export default function SolicitudCard({
   const scheduledDate =
     request.scheduledDate || request.fechaProgramada;
 
+  const imageUrl =
+    request.imageUrl || request.imagenUrl;
+
   const details = (
     <>
       {description && (
@@ -158,6 +161,20 @@ export default function SolicitudCard({
         </div>
       )}
 
+      {imageUrl && (
+        <div className="mt-5">
+          <p className="mb-2 text-sm font-semibold text-[#0B1F3A]">
+            Fotografía del problema
+          </p>
+
+          <img
+            src={imageUrl}
+            alt={`Fotografía del problema: ${title}`}
+            className="max-h-96 w-full rounded-xl border border-slate-200 object-cover"
+          />
+        </div>
+      )}
+
       {children && (
         <div className="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end [&>button]:w-full sm:[&>button]:w-auto">
           {children}
@@ -176,7 +193,9 @@ export default function SolicitudCard({
           <span
             className={`inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-bold ${categoryInfo.badge}`}
           >
-            <span aria-hidden="true">{categoryInfo.icon}</span>
+            <span aria-hidden="true">
+              {categoryInfo.icon}
+            </span>
             {categoryInfo.label}
           </span>
 
@@ -207,7 +226,9 @@ export default function SolicitudCard({
     >
       <button
         type="button"
-        onClick={() => setIsOpen((current) => !current)}
+        onClick={() =>
+          setIsOpen((current) => !current)
+        }
         className="flex w-full items-center justify-between gap-4 p-5 text-left"
         aria-expanded={isOpen}
       >
@@ -216,7 +237,9 @@ export default function SolicitudCard({
             <span
               className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm font-bold ${categoryInfo.badge}`}
             >
-              <span aria-hidden="true">{categoryInfo.icon}</span>
+              <span aria-hidden="true">
+                {categoryInfo.icon}
+              </span>
               {categoryInfo.label}
             </span>
 

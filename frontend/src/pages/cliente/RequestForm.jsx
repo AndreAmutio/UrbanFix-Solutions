@@ -12,6 +12,7 @@ const initialForm = {
 
 function getMinimumDate() {
   const now = new Date();
+
   const localDate = new Date(
     now.getTime() - now.getTimezoneOffset() * 60000,
   );
@@ -44,14 +45,18 @@ export function RequestForm({ selectedCategory, onCreated }) {
   };
 
   const handleImageChange = (event) => {
-    setImage(event.target.files?.[0] || null);
+    const selectedImage = event.target.files?.[0] || null;
+
+    setImage(selectedImage);
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
     setLoading(true);
     setMessage(null);
 
+    //CREAR SOLICITUD
     try {
       const requestData = {
         title: formData.title.trim(),
@@ -71,14 +76,8 @@ export function RequestForm({ selectedCategory, onCreated }) {
         requestData,
       );
 
-      /*
-       * Swagger no documenta la estructura de la respuesta.
-       * Estas variantes permiten obtener el ID si el backend devuelve:
-       * - la solicitud directamente;
-       * - { solicitud: {...} };
-       * - { data: {...} };
-       * - { solicitudId: 1 }.
-       */
+      //OBTENER EL id
+
       const createdRequest =
         response.data?.solicitud ??
         response.data?.data ??
@@ -90,9 +89,16 @@ export function RequestForm({ selectedCategory, onCreated }) {
 
       let successText = "Solicitud creada correctamente.";
 
+      //SUBIR IMAGEN
+
       if (image) {
-        if (createdId) {
+        if (!createdId) {
+          successText =
+            "La solicitud se creó, pero no se pudo obtener su ID para adjuntar la imagen.";
+        } else {
           const imageData = new FormData();
+
+          // El archivo se envía como multipart/form-data.
           imageData.append("image", image);
 
           try {
@@ -100,15 +106,22 @@ export function RequestForm({ selectedCategory, onCreated }) {
               `/solicitudes/${createdId}/imagen`,
               imageData,
             );
-          } catch {
+
             successText =
-              "La solicitud se creó, pero no se pudo subir la imagen.";
+              "Solicitud e imagen creadas correctamente.";
+          } catch (imageError) {
+            console.error(
+              "Error al subir la imagen:",
+              imageError.response?.data || imageError,
+            );
+
+            successText =
+              "La solicitud se creó correctamente, pero no se pudo subir la imagen.";
           }
-        } else {
-          successText =
-            "La solicitud se creó, pero el backend no devolvió su ID y no se pudo adjuntar la imagen.";
         }
       }
+    
+      //LIMPIA FORMULARIO
 
       setFormData({
         ...initialForm,
@@ -117,16 +130,21 @@ export function RequestForm({ selectedCategory, onCreated }) {
 
       setImage(null);
       event.target.reset();
-
       setMessage({
         type: "success",
         text: successText,
       });
 
+      // Recargar solicitudes
       if (onCreated) {
         await onCreated();
       }
     } catch (error) {
+      console.error(
+        "Error al crear la solicitud:",
+        error.response?.data || error,
+      );
+
       setMessage({
         type: "error",
         text:
@@ -136,6 +154,23 @@ export function RequestForm({ selectedCategory, onCreated }) {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleClear = () => {
+    setFormData({
+      ...initialForm,
+      category: selectedCategory || "",
+    });
+
+    setImage(null);
+    setMessage(null);
+
+    // Limpiar también el input file
+    const imageInput = document.getElementById("requestImage");
+
+    if (imageInput) {
+      imageInput.value = "";
     }
   };
 
@@ -267,6 +302,7 @@ export function RequestForm({ selectedCategory, onCreated }) {
         </div>
       </div>
 
+      {/* IMAGEN */}
       <div>
         <label
           htmlFor="requestImage"
@@ -282,7 +318,9 @@ export function RequestForm({ selectedCategory, onCreated }) {
           <span className="text-3xl">📷</span>
 
           <span className="mt-2 font-semibold text-[#0B1F3A]">
-            {image ? image.name : "Seleccionar una fotografía"}
+            {image
+              ? image.name
+              : "Seleccionar una fotografía"}
           </span>
 
           <span className="mt-1 text-xs text-slate-500">
@@ -302,14 +340,7 @@ export function RequestForm({ selectedCategory, onCreated }) {
       <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-end">
         <button
           type="button"
-          onClick={() => {
-            setFormData({
-              ...initialForm,
-              category: selectedCategory || "",
-            });
-            setImage(null);
-            setMessage(null);
-          }}
+          onClick={handleClear}
           disabled={loading}
           className="rounded-xl border border-slate-300 px-6 py-3 font-semibold text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
         >
@@ -321,7 +352,9 @@ export function RequestForm({ selectedCategory, onCreated }) {
           disabled={loading}
           className="rounded-xl bg-[#1976FF] px-7 py-3 font-semibold text-white shadow-md transition hover:bg-[#0f65e8] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {loading ? "Enviando solicitud..." : "Crear solicitud"}
+          {loading
+            ? "Enviando solicitud..."
+            : "Crear solicitud"}
         </button>
       </div>
     </form>

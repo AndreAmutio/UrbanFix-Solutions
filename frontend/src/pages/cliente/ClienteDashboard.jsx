@@ -72,6 +72,7 @@ export default function ClienteDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  
 
   const loadRequests = async () => {
     setLoadingRequests(true);
@@ -83,6 +84,8 @@ export default function ClienteDashboard() {
         response.data?.solicitudes ??
         response.data?.data ??
         response.data;
+        
+        console.log("Solicitudes recibidas:", requestList);
 
       setRequests(Array.isArray(requestList) ? requestList : []);
     } catch (error) {
@@ -364,7 +367,7 @@ export default function ClienteDashboard() {
               </button>
             </div>
           ) : (
-            <div className="mt-7 grid gap-5 lg:grid-cols-2">
+            <div className="mt-7 grid items-start gap-5 lg:grid-cols-2">
               {requests.map((request) => (
                 <SolicitudCard
                   key={request.id}
