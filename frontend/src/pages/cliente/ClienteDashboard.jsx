@@ -202,7 +202,7 @@ export default function ClienteDashboard() {
               className="flex items-center gap-3 rounded-full border border-slate-200 bg-white py-1.5 pl-1.5 pr-4 transition hover:border-blue-300"
             >
               <img
-                src={user?.image || avatarCliente}
+                src={user?.imageUrl || avatarCliente}
                 alt="Perfil"
                 className="h-12 w-12 rounded-full object-cover"
               />

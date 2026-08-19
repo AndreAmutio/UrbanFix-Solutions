@@ -577,6 +577,7 @@ export default function TecnicoDashboard() {
           </aside>
         </div>
       </main>
+      <Footer />
 
       {/* Modal de confirmación para rechazar */}
       {requestToReject && (
@@ -651,7 +652,7 @@ export default function TecnicoDashboard() {
           </section>
         </div>
       )}
-       <Footer />
+      
     </div>
     
   );

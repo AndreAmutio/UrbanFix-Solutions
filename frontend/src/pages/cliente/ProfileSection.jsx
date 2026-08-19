@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import api from "../../services/api";
 import avatarCliente from "../../assets/imagenes/perfil-usuario-femenino.png";
+import { useAuth } from "../../context/AuthContext";
 
 export function ProfileSection({ profile, onLogout, onClose }) {
+  const { updateUser } = useAuth();
+
   const [isEditing, setIsEditing] = useState(false);
 
   const [profileData, setProfileData] = useState(profile);
@@ -15,6 +18,9 @@ export function ProfileSection({ profile, onLogout, onClose }) {
     address: profile?.address || "",
   });
 
+  const fileInputRef = useRef(null);
+
+  // Cargar el perfil desde el backend
   useEffect(() => {
     const loadProfile = async () => {
       try {
@@ -41,6 +47,7 @@ export function ProfileSection({ profile, onLogout, onClose }) {
     loadProfile();
   }, []);
 
+  // Cambios en los inputs
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -50,6 +57,7 @@ export function ProfileSection({ profile, onLogout, onClose }) {
     }));
   };
 
+  // Cancelar edición
   const handleCancel = () => {
     setFormData({
       name: profileData?.name || "",
@@ -59,6 +67,78 @@ export function ProfileSection({ profile, onLogout, onClose }) {
     });
 
     setIsEditing(false);
+  };
+
+  // Subir nueva foto
+  const handleImageChange = async (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    const imageFormData = new FormData();
+    imageFormData.append("image", file);
+
+    try {
+      // Subir imagen
+      await api.post("/users/me/image", imageFormData);
+
+      // Obtener perfil actualizado
+      const response = await api.get("/users/me");
+
+      const updatedUser =
+        response.data?.user ??
+        response.data?.data ??
+        response.data;
+
+      setProfileData(updatedUser);
+
+      // Actualizar usuario global
+      updateUser(updatedUser);
+
+      console.log("Foto actualizada:", updatedUser);
+    } catch (error) {
+      console.error(
+        "Error al subir la imagen:",
+        error.response?.data || error.message,
+      );
+    }
+  };
+
+  // Guardar cambios del perfil
+  const handleSaveChanges = async () => {
+    try {
+      const response = await api.patch("/users/me", {
+        name: formData.name,
+        phone: formData.phone,
+        address: formData.address,
+      });
+
+      const updatedUser =
+        response.data?.user ??
+        response.data?.data ??
+        response.data;
+
+      setProfileData(updatedUser);
+
+      // Actualizar usuario global
+      updateUser(updatedUser);
+
+      setFormData({
+        name: updatedUser?.name || "",
+        email: updatedUser?.email || "",
+        phone: updatedUser?.phone || "",
+        address: updatedUser?.address || "",
+      });
+
+      setIsEditing(false);
+
+      console.log("Perfil actualizado:", updatedUser);
+    } catch (error) {
+      console.error(
+        "Error al actualizar el perfil:",
+        error.response?.data || error.message,
+      );
+    }
   };
 
   return (
@@ -103,11 +183,36 @@ export function ProfileSection({ profile, onLogout, onClose }) {
         <div className="flex-1 px-6 py-8">
           {/* Avatar */}
           <div className="flex flex-col items-center border-b border-slate-200 pb-8">
-            <img
-              src={profileData?.image || avatarCliente}
-              alt="Foto de perfil"
-              className="h-28 w-28 rounded-full border-4 border-blue-100 object-cover shadow-sm"
-            />
+            <div className="relative">
+              <img
+                src={profileData?.imageUrl || avatarCliente}
+                alt="Foto de perfil"
+                onError={(event) => {
+                  event.currentTarget.src = avatarCliente;
+                }}
+                className="h-28 w-28 rounded-full border-4 border-blue-100 object-cover shadow-sm"
+              />
+
+              {/* Input oculto */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+
+              {/* Cámara */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute bottom-0 right-0 text-lg text-slate-500 transition hover:text-[#1976FF]"
+                aria-label="Cambiar foto de perfil"
+                title="Cambiar foto"
+              >
+                📷
+              </button>
+            </div>
 
             <h3 className="mt-4 text-center text-xl font-bold text-[#0B1F3A]">
               {profileData?.name || "Cliente UrbanFix"}
@@ -130,6 +235,7 @@ export function ProfileSection({ profile, onLogout, onClose }) {
 
           {/* Datos */}
           <div className="mt-8 space-y-5">
+            {/* Nombre */}
             <div>
               <label
                 htmlFor="profile-name"
@@ -149,6 +255,7 @@ export function ProfileSection({ profile, onLogout, onClose }) {
               />
             </div>
 
+            {/* Email */}
             <div>
               <label
                 htmlFor="profile-email"
@@ -162,12 +269,12 @@ export function ProfileSection({ profile, onLogout, onClose }) {
                 name="email"
                 type="email"
                 value={formData.email}
-                onChange={handleChange}
-                disabled={!isEditing}
-                className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-700 outline-none transition disabled:bg-slate-50 disabled:text-slate-500 focus:border-[#1976FF] focus:ring-2 focus:ring-blue-100"
+                disabled
+                className="mt-2 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-500 outline-none"
               />
             </div>
 
+            {/* Teléfono */}
             <div>
               <label
                 htmlFor="profile-phone"
@@ -188,6 +295,7 @@ export function ProfileSection({ profile, onLogout, onClose }) {
               />
             </div>
 
+            {/* Dirección */}
             <div>
               <label
                 htmlFor="profile-address"
@@ -208,7 +316,7 @@ export function ProfileSection({ profile, onLogout, onClose }) {
               />
             </div>
 
-            {/* Botones de edición */}
+            {/* Botones */}
             {isEditing && (
               <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end">
                 <button
@@ -221,6 +329,7 @@ export function ProfileSection({ profile, onLogout, onClose }) {
 
                 <button
                   type="button"
+                  onClick={handleSaveChanges}
                   className="rounded-xl bg-[#1976FF] px-5 py-3 font-semibold text-white transition hover:bg-[#0f65e8]"
                 >
                   Guardar cambios
