@@ -23,25 +23,24 @@ export function Navbar() {
   };
 
   return (
-    <nav className="fixed left-0 top-0 z-50 w-full border-b border-white/20 bg-[#0B1F3A]/70 shadow-lg shadow-slate-950/10 backdrop-blur-md">
-      <div className="flex w-full items-center justify-between px-5 py-4 sm:px-8 lg:px-12">
+    <nav className="fixed left-0 top-0 z-50 w-full border-b border-white/20 bg-[#52657A]/45 shadow-lg shadow-slate-950/10 backdrop-blur-md">
+      <div className="flex w-full items-center justify-between px-5 py-2 sm:px-8 lg:px-12">
         <Link
           to="/"
           onClick={closeMenu}
           aria-label="Ir al inicio de UrbanFix"
-          className="flex items-center gap-4"
+          className="flex items-center"
         >
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden">
+          <span className="flex h-16 w-80 shrink-0 items-center">
             <img
               src={logoCasita}
-              alt=""
-              className="h-full w-full scale-[2.4] object-contain"
+              alt="UrbanFix"
+              className="h-20 w-auto max-w-full object-contain object-left"
             />
           </span>
-
-          <span className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+          {/* <span className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
             Urban<span className="text-[#2DA8FF]">Fix</span>
-          </span>
+          </span> */}
         </Link>
 
         {/* Navegación para escritorio */}
